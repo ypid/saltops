@@ -1,0 +1,11 @@
+---
+
+# SPDX-FileCopyrightText: 2021 Robin Schneider <robin.schneider@geberit.com>
+#
+# SPDX-License-Identifier: CC0-1.0
+
+## Some formulas provide a `enabled` flag. This is useful to prevent accidental state.apply to minions that are not supposed to get this state applied.
+## In lack of a better solution, we hook into this `enabled` flag when provided by formulas.
+
+filebeat:
+  enabled: {{ 'filebeat' in stack['states'] }}

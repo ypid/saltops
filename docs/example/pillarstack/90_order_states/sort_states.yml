@@ -1,0 +1,32 @@
+# SPDX-FileCopyrightText: 2021 Robin Schneider <robin.schneider@geberit.com>
+#
+# SPDX-License-Identifier: CC0-1.0
+
+states:
+{%- for state_order in stack.get('states_order', []) %}
+{% if state_order.name in pillar.get('states', {}) %}
+  - {{ state_order | json }}
+{% endif %}
+{% endfor %}
+
+# Check if for every state in states we have an order defined.
+
+{%- set states_order_undefined = [] %}
+{# Set method not available in Jinja2: for state in set(stack.get('states_order', [])).difference(pillar.get('states', [])) #}
+{%- for state in pillar.get('states', []) %}
+{%-   set wanted_state_names_with_defined_order = [] %}
+{%-   for state_order in stack.get('states_order', []) %}
+{%-     if state_order.name in pillar.get('states', {}) %}
+{%-       do wanted_state_names_with_defined_order.append(state_order.name) %}
+{%-     endif %}
+{%-   endfor %}
+{%-   if state not in wanted_state_names_with_defined_order %}
+{%-     set _ = states_order_undefined.append(state) %}
+{%-   endif %}
+{%- endfor %}
+{%- if states_order_undefined %}
+states_order_undefined_please_fix: {{ states_order_undefined | json }}
+{%- endif %}
+
+states_order:
+  - __: overwrite

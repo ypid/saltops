@@ -1,0 +1,48 @@
+---
+
+# SPDX-FileCopyrightText: 2021 Robin Schneider <robin.schneider@geberit.com>
+#
+# SPDX-License-Identifier: CC0-1.0
+
+states_order:
+  - { 'name': channels.disablelocalrepos }
+
+  - { 'name': channels, 'desc': 'SUSE Manager state that configures zypper repositories. Needs to be run first because of issues.' }
+
+  ## Roughtly based on: https://github.com/debops/debops/blob/master/ansible/playbooks/common.yml
+  - { 'name': hostsfile, 'desc': 'Configure /etc/hosts file. Ref: debops.netbase.' }
+  - { 'name': zypper, 'desc': 'Configure the zypper package manager.' }
+  - { 'name': atd }
+  - { 'name': machine, 'desc': 'Configure /etc/motd and /etc/issue.' }
+  - { 'name': sudoers }
+  - { 'name': sudoers.included, 'desc': 'Public formula to configure sudo.' }
+  - { 'name': users, 'desc': 'Public formula to manage local system users and groups.' }
+  - { 'name': chrony, 'desc': 'Public formula to manage the chrony NTP service.' }
+  - { 'name': packages_formula, 'desc': 'Public formula to install packages on minion group, or per minion level using pillar.' }
+  - { 'name': resources, 'desc': 'Manage custom file resources through pillar.' }
+  - { 'name': firewalld, 'desc': 'Public formula for configuring the host filrewall.' }
+  - { 'name': systemd.units, 'desc': 'Public formula for custom systemd units (services, timers). Note that timers are a better alternative to cron jobs.' }
+  - { 'name': linux.system.grub, 'desc': 'Public formula to configure grub for easy Linux kernel boot parameters configuration.' }
+  - { 'name': linux.system.kernel, 'desc': 'Public formula to configure Linux kernel boot parameters.' }
+  - { 'name': linux.system.service, 'desc': 'Public formula to enable/disable (systemd) services.' }
+  - { 'name': linux.storage.swap, 'desc': 'Public formula to enable/disable swap.' }
+  - { 'name': linux.storage.mount, 'desc': 'Public formula to manage (persistant) mount points.' }
+  - { 'name': unattended_upgrades, 'desc': 'Deploy script that installs zypper package updates and optionally reboots.' }
+
+  ## Should be first but cannot because additional_packages enables PackageHub currently.
+  - { 'name': etckeeper, 'desc': 'Configure /etc to be tracked by git using etckeeper.' }
+
+  - { 'name': nginx, 'desc': 'Public formula to configure the Nginx webserver.' }
+  - { 'name': postfix, 'desc': 'Public formula to install the Postfix Mail Transfer Agent.' }
+  - { 'name': postfix.config, 'desc': 'Public formula to configure the Postfix Mail Transfer Agent.' }
+
+  - { 'name': check_mk_agent.install, 'desc': 'Public formula to install the CheckMK Monitoring agent.' }
+  - { 'name': check_mk_agent.config, 'desc': 'Public formula to configure the CheckMK Monitoring agent.' }
+  - { 'name': check_mk_agent.plugins, 'desc': 'Public formula to deploy CheckMK agent plugins.' }
+  - { 'name': dotfiles, 'desc': 'Deploy SneRo aka ypid dotfiles (vim, zsh, tmux). Only active for snero_site by default. Test with `SUDO_USER="snero_site" && HOME="/root/$SUDO_USER" && export SUDO_USER && export HOME && cd && exec zsh`. Or install properly, refer to pillar.' }
+
+  - { 'name': vector, 'desc': 'Import the timber.io RPM key for Vector.' }
+
+  - { 'name': elastic_co, 'desc': 'Import the elastic.co RPM key. Ref debops.elastic_co.' }
+  - { 'name': elasticsearch, 'desc': 'Public formula state to setup and configure Elasticsearch.' }
+  - { 'name': kibana, 'desc': 'Public formula state to setup and configure Kibana.' }

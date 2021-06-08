@@ -1,0 +1,137 @@
+---
+
+# SPDX-FileCopyrightText: 2021 Robin Schneider <robin.schneider@geberit.com>
+#
+# SPDX-License-Identifier: CC0-1.0
+
+{%- from 'macros/nginx_slim.jinja' import sls_block with context %}
+
+deployment_model: 'OS managed by SaltStack. Application mostly managed by SaltStack, see pillar comments for exceptions.'
+
+states:
+  zypper: {}
+  packages_formula: {}
+  users: {}
+  resources: {}
+  linux.storage.mount: {}
+  systemd.units: {}
+
+  nginx: {}
+  elasticsearch: {}
+  kibana: {}
+
+
+zypper:
+  locks: |
+    solvable_name: elasticsearch
+    type: package
+    match_type: exact
+    case_sensitive: on
+    ## 7.6.x: Only versions up to 7.7 (excluding) will be considered when updating.
+    version: > 7.7
+
+    solvable_name: kibana
+    type: package
+    match_type: exact
+    case_sensitive: on
+    version: > 7.7
+
+resources:
+  files:
+
+    ## Edit this file on the Salt master where `elasticsearch-keystore` is installed.
+    ## /etc/elasticsearch symlinked so that the command works on the master.
+    ## The file is provided to the intended minions only by means of Salt file_tree ext_piller.
+    ## TODO: Potentially auto reload this file on change in Elasticsearch using the API call POST _nodes/reload_secure_settings
+    '/etc/elasticsearch/elasticsearch.keystore':
+      contents_pillar: 'secret_files:etc:elasticsearch:elasticsearch.keystore'
+      user: 'root'
+      group: 'elasticsearch'
+      mode: '0640'
+
+nginx:
+
+  servers:
+    managed:
+      kibana.conf:
+        enabled: true
+
+        config:
+          - server:
+              - server_name: '_'
+              - listen:
+                  - '[::]:80 default_server'
+                  - '80 default_server'
+              - return: '301 https://$host$request_uri'
+
+          - server:
+              - server_name: '_'
+              - ssl_certificate: '/etc/pki/realms/{{ minion_id }}/default.crt'
+              - ssl_certificate_key: '/etc/pki/realms/{{ minion_id }}/default.key'
+              {{ sls_block(stack['nginx']['tls_default'])|indent(14) }}
+              - return: '307 https://{{ stack['kibana']['fqdn'] }}$request_uri'
+
+          - server:
+              - server_name: '{{ stack['kibana']['fqdn'] }}'
+              - ssl_certificate: '/etc/pki/realms/{{ minion_id }}/default.crt'
+              - ssl_certificate_key: '/etc/pki/realms/{{ minion_id }}/default.key'
+              {{ sls_block(stack['nginx']['tls_default'])|indent(14) }}
+
+              # Disallow access to hidden files and directories, except `/.well-known/`
+              # https://www.mnot.net/blog/2010/04/07/well-known
+              # https://tools.ietf.org/html/rfc5785
+              - 'location ~ /\.(?!well-known/)':
+                - return: 404
+
+              - 'location /':
+                  - proxy_set_header: 'Host              $host'
+                  - proxy_set_header: 'X-Real-IP         $remote_addr'
+                  - proxy_set_header: 'X-Forwarded-For   $proxy_add_x_forwarded_for'
+                  - proxy_set_header: 'X-Forwarded-Proto $scheme'
+                  - proxy_pass: 'http://kibana'
+                  - client_max_body_size: '0'
+
+      upstream_kibana.conf:
+        enabled: true
+        available_dir: /etc/nginx/conf.d
+        enabled_dir: /etc/nginx/conf.d
+        config:
+          - upstream kibana:
+              - server: 127.0.0.1:5601
+
+elasticsearch:
+
+  sysconfig:
+    ES_PATH_CONF: '/etc/elasticsearch'
+    ES_JAVA_OPTS: '-Xms15g -Xmx15g'
+
+  config:
+    cluster.name: logging-prod
+
+    node.name: '${HOSTNAME}'
+
+    path.data: /var/lib/elasticsearch
+    path.logs: /var/log/elasticsearch
+
+    ## Otherwise, we would publish 127.0.0.2, ref /etc/hosts.
+    network.publish_host: '_site_'
+
+    network.bind_host:
+      - '_local_'
+
+      ## Refer to /etc/hosts
+      - '127.0.0.2'
+
+      - '_site_'
+
+kibana:
+  use_upstream_repo: false
+  config:
+    ## Bind to localhost only:
+    server.host: "localhost"
+
+    elasticsearch.hosts:
+      - "https://{{ minion_id }}:9200"
+    elasticsearch.username: 'kibana'
+
+    logging.dest: "/var/log/kibana/kibana.log"

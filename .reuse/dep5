@@ -1,0 +1,10 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: SaltOps
+Upstream-Contact: Robin Schneider <robin.schneider@geberit.com>
+Source: https://github.com/geberit/saltops
+
+# Sample paragraph, commented out:
+#
+# Files: src/*
+# Copyright: $YEAR $NAME <$CONTACT>
+# License: ...
