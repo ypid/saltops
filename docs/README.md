@@ -27,6 +27,10 @@ https://docs.debops.org/en/master/
   herself but still good practice.
   The Formula should instead have sane defaults which are not specific
   to an organization.
+  It is prohibited to include anything
+  sensible like passwords or personal information in Salt States because of the
+  architecture of SaltStack! Ask yourself who can access the Salt States from
+  the Salt Master and then reconsider.
 * Environment specifics should be provided to a Formula via Salt Pillar.
 
 ## Pillar layout
