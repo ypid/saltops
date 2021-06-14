@@ -3,8 +3,10 @@ Upstream-Name: SaltOps
 Upstream-Contact: Robin Schneider <robin.schneider@geberit.com>
 Source: https://github.com/geberit/saltops
 
-# Sample paragraph, commented out:
-#
-# Files: src/*
-# Copyright: $YEAR $NAME <$CONTACT>
-# License: ...
+Files: formulas/elastic_co/elastic_co/files/GPG-KEY-elasticsearch
+Copyright: 2021 Robin Schneider <robin.schneider@geberit.com>
+License: CC0-1.0
+
+Files: formulas/vector/vector/files/gpg.3543DB2D0A2BC4B8.key
+Copyright: 2021 Robin Schneider <robin.schneider@geberit.com>
+License: CC0-1.0

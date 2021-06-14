@@ -1,0 +1,23 @@
+# SPDX-FileCopyrightText: 2021 Robin Schneider <robin.schneider@geberit.com>
+#
+# SPDX-License-Identifier: CC0-1.0
+
+---
+
+resources:
+
+  repositories:
+    '/usr/local/src/ITO_Server_Linux_Scripts':
+      src: 'https://git.example.net/my_repo.git'
+
+  files:
+
+    '/etc/profile.d/local.sh':
+      contents: |
+        # File content.
+
+
+    '/etc/pki/realms/template':
+      state: 'link'
+      makedirs: True
+      target: '/usr/local/share/templates/pki'

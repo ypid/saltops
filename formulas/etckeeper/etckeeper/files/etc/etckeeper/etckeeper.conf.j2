@@ -1,0 +1,57 @@
+{# SPDX-FileCopyrightText: 2021 Robin Schneider <robin.schneider@geberit.com>
+ #
+ # SPDX-License-Identifier: AGPL-3.0-only
+ #}
+# {{ salt_managed }}
+# The VCS to use.
+#VCS="hg"
+VCS=git
+#VCS="bzr"
+#VCS="darcs"
+
+# Options passed to git commit when run by etckeeper.
+GIT_COMMIT_OPTIONS=""
+
+# Options passed to hg commit when run by etckeeper.
+HG_COMMIT_OPTIONS=""
+
+# Options passed to bzr commit when run by etckeeper.
+BZR_COMMIT_OPTIONS=""
+
+# Options passed to darcs record when run by etckeeper.
+DARCS_COMMIT_OPTIONS="-a"
+
+# Uncomment to avoid etckeeper committing existing changes
+# to /etc automatically once per day.
+#AVOID_DAILY_AUTOCOMMITS=1
+
+# Uncomment the following to avoid special file warning
+# (the option is enabled automatically by cronjob regardless).
+#AVOID_SPECIAL_FILE_WARNING=1
+
+# Uncomment to avoid etckeeper committing existing changes to
+# /etc before installation. It will cancel the installation,
+# so you can commit the changes by hand.
+#AVOID_COMMIT_BEFORE_INSTALL=1
+
+# The high-level package manager that's being used.
+# (apt, pacman-g2, yum, zypper etc)
+HIGHLEVEL_PACKAGE_MANAGER=zypper
+
+# The low-level package manager that's being used.
+# (dpkg, rpm, pacman, pacman-g2, etc)
+LOWLEVEL_PACKAGE_MANAGER=rpm
+
+# To push each commit to a remote, put the name of the remote here.
+# (eg, "origin" for git). Space-separated lists of multiple remotes
+# also work (eg, "origin gitlab github" for git).
+#PUSH_REMOTE=""
+
+# Because it is slow that some package manager make the packagelist
+# (eg, rpm -qa), high-level package manager might time out.
+# If you think that the packagelist is unnecessary,
+# set AVOID_PACKAGELIST=1.
+# Or if you want to avoid it temporarily,
+# you can use environment variable ETCKEEPER_AVOID_PACKAGELIST=1 .
+# (eg, ETCKEEPER_AVOID_PACKAGELIST=1 zypper update)
+#AVOID_PACKAGELIST=1
