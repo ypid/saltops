@@ -4,7 +4,7 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-only
 
-# {{ salt_managed }}
+# {{ salt['pillar.get']('salt_managed', 'This file is managed by SaltStack, all changes will be lost.') }}
 
 set -o nounset -o pipefail -o errexit
 

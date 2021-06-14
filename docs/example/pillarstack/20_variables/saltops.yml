@@ -1,6 +1,0 @@
-# SPDX-FileCopyrightText: 2021 Robin Schneider <robin.schneider@geberit.com>
-#
-# SPDX-License-Identifier: AGPL-3.0-only
-
-# There seems to be no default variable like in Ansible `ansible_managed`.
-salt_managed: 'This file is managed by SaltStack, all changes will be lost.'
