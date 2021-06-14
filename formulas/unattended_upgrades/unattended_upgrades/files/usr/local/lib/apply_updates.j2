@@ -1,0 +1,72 @@
+#!/bin/bash
+
+# SPDX-FileCopyrightText: 2019-2021 Robin Schneider <robin.schneider@geberit.com>
+#
+# SPDX-License-Identifier: AGPL-3.0-only
+
+# {{ salt_managed }}
+
+set -o nounset -o pipefail -o errexit
+
+# Based on: /usr/lib/YaST2/bin/online_update
+{%- set zypper_cmd = ["zypper", "--non-interactive", "--quiet"] -%}
+
+{%- if salt['pillar.get']('unattended_upgrades:mode', 'update') == "update" %}
+{%-   set _ = zypper_cmd.append("update") %}
+{%- else %}
+{%-   set _ = zypper_cmd.append("patch") %}
+{%- endif %}
+
+{%- if salt['pillar.get']('unattended_upgrades:interactive_patches', True) %}
+{%-   set _ = zypper_cmd.append("--with-interactive") %}
+{%- else %}
+{%-   set _ = zypper_cmd.append("--skip-interactive") %}
+{%- endif %}
+
+{%- if salt['pillar.get']('unattended_upgrades:auto_agree_with_licenses', False) %}
+{%-   set _ = zypper_cmd.append("--auto-agree-with-licenses") %}
+{%- endif %}
+
+{%- if salt['pillar.get']('unattended_upgrades:include_recommends', False) %}
+{%-   set _ = zypper_cmd.append("--recommends") %}
+{%- else %}
+{%-   set _ = zypper_cmd.append("--no-recommends") %}
+{%- endif %}
+
+function runzypper {
+    # run passed arguments
+    "$@"
+    local status=$?
+    # the return code 103 indicates a succesful patch of the zypper package
+    # other patches might stil be waiting
+    if [ $status -eq 103 ]; then
+        echo "The Zypper package was patched, rerunning update to apply remaining patches."
+        # rerun passed zypper command and use new status as return value
+        "$@"
+        status=$?
+    fi
+    return $status
+}
+
+# Do not overload the hypervisor or the network by running this script in parallel on all VMs.
+# Rather we distribute the load using a determinstic random delay.
+# Requires SaltStack 2019.2.0: salt['random.rand_int'](0, 60 * 15, grains['id'])
+# FIXME: Enable when all our minions have 2019.2.0.
+sleep "{{ salt['random.rand_int'](0, 60 * 15) }}"
+
+runzypper {{ ' '.join(zypper_cmd) }}
+
+{%- if salt['pillar.get']('unattended_upgrades:auto_reboot', False) %}
+
+# Avoid using the `needs-restarting` command. It seems to be intended for
+# humans without clear exit codes.
+# Also reboot if only services have been updated, reboot is easier than handling the various libraries/services.
+# `zypper needs-rebooting` has defined exit codes but is not available on SLES 12. Only on 15.
+
+if [ -e "/var/run/reboot-required" ] || [ "$(zypper ps | grep --extended-regexp --count 'wish to restart|PID')" != "0" ]; then
+    reboot_delay_minutes="{{ salt['random.rand_int'](60, 90, grains['id']) }}"
+    msg="as part of the patch management so that all running programs and the running kernel are up-to-date."
+    shutdown --reboot "+${reboot_delay_minutes}" "Reboot ${msg}"
+    logger --priority local0.notice  --tag apply_updates "Scheduled reboot in ${reboot_delay_minutes} minutes from now ${msg}"
+fi
+{%- endif %}
