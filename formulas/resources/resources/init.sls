@@ -8,27 +8,45 @@ resources__repository_absent_{{ path }}:
   file.absent:
     - name: {{ path }}
 {%   else %}
-resources__repository_present_{{ path }}:
+resources__repository_present_{{ path }}_clone:
 
-{# git.cloned does not support recursive cloning #saltgate -> #ansiblegate :)
+  # git.cloned does not support recursive cloning #saltgate -> #ansiblegate :)
   git.cloned:
     - name: '{{ options['src'] }}'
     - target: {{ path }}
-    {# I am missing the `{{ omit }}` feature from Ansible. Have not found a replacement the following is left unimplemented for now:
-    - branch: '{{ options.get('branch', "null") }}'
-    - user: '{{ options.get('user', "null") }}'
-    - password: '{{ options.get('password', "null") }}'
-    - identity: '{{ options.get('identity', "null") }}'
-    - https_user: '{{ options.get('https_user', "null") }}'
-    - https_pass: '{{ options.get('https_pass', "null") }}'
-    - output_encoding: '{{ options.get('output_encoding', "null") }}'
+    {# I am missing the `{{ omit }}` feature from Ansible. Have not found a replacement so the following is left unimplemented for now:
+    # - branch: '{{ options.get('branch', "null") }}'
+    # - user: '{{ options.get('user', "null") }}'
+    # - password: '{{ options.get('password', "null") }}'
+    # - identity: '{{ options.get('identity', "null") }}'
+    # - https_user: '{{ options.get('https_user', "null") }}'
+    # - https_pass: '{{ options.get('https_pass', "null") }}'
+    # - output_encoding: '{{ options.get('output_encoding', "null") }}'
     #}
 
+{% if 'repo_url_search' in options and 'repo_url_replace' in options %}
+resources__repository_present_{{ path }}_replace:
+  cmd.run:
+    - name: git checkout .gitmodules
+    - cwd: {{ path }}
+
+  file.replace:
+    - name: {{ path }}/.gitmodules
+    - pattern: {{ options['repo_url_search'] }}
+    - repl: {{ options['repo_url_replace'] }}
+{% endif %}
+
+resources__repository_present_{{ path }}_pull:
+  cmd.run:
+    - name: git pull && git submodule update --init --recursive
+    - cwd: {{ path }}
+
   {# The git Ansible module does recursive cloning by default as it should! I am looking at you git Salt state! #}
-  ansible.call:
-    - source_control.git:
-      - repo: '{{ options['src'] }}'
-      - dest: {{ path }}
+  # There is some issue with calling Ansible. Use git.cloned and cmd.run for now.
+  # ansiblegate:
+  #   - source_control.git:
+  #     - repo: '{{ options['src'] }}'
+  #     - dest: {{ path }}
 
 {%   endif %}
 {% endfor %}
