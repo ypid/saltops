@@ -37,7 +37,7 @@ https://docs.debops.org/en/master/
 
 `pillarstack` is used. It is one of the ext pillar modules provided
 by SaltStack and was chosen because it allows multiple stages of the Pillar
-source data. This in turn allows to base on Pillar variable on the content of
+source data. This in turn allows to base one Pillar variable on the content of
 a previously defined Pillar variable.
 
 The stages and their function are:
