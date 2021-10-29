@@ -4,6 +4,8 @@
 
 atd_install:
   pkg.installed:
+    - refresh: False
+    - cache_valid_time: 86400
     - pkgs:
       - at
 
