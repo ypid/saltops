@@ -63,7 +63,7 @@ runzypper {{ ' '.join(zypper_cmd) }}
 # Also reboot if only services have been updated, reboot is easier than handling the various libraries/services.
 # `zypper needs-rebooting` has defined exit codes but is not available on SLES 12. Only on 15.
 
-if [ -e "/var/run/reboot-required" ] || [ "$(zypper ps | grep --extended-regexp --count 'wish to restart|PID')" != "0" ]; then
+if [ -e "/var/run/reboot-required" ] || [ -e "/var/run/reboot-needed" ] || [ "$(zypper ps | grep --extended-regexp --count 'wish to restart|PID')" != "0" ]; then
     reboot_delay_minutes="{{ salt['random.rand_int'](60, 90, grains['id']) }}"
     msg="as part of the patch management so that all running programs and the running kernel are up-to-date."
     shutdown --reboot "+${reboot_delay_minutes}" "Reboot ${msg}"
