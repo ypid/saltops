@@ -40,6 +40,7 @@ states_order:
   - { 'name': check_mk_agent.config, 'desc': 'Public formula to configure the CheckMK Monitoring agent.' }
   - { 'name': check_mk_agent.plugins, 'desc': 'Public formula to deploy CheckMK agent plugins.' }
   - { 'name': dotfiles, 'desc': 'Deploy SneRo aka ypid dotfiles (vim, zsh, tmux). Only active for snero_site by default. Test with `SUDO_USER="snero_site" && HOME="/root/$SUDO_USER" && export SUDO_USER && export HOME && cd && exec zsh`. Or install properly, refer to pillar.' }
+  - { 'name': git, 'desc': 'Configure git config defaults.' }
 
   - { 'name': vector, 'desc': 'Import the timber.io RPM key for Vector.' }
 
