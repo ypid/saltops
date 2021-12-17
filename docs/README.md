@@ -51,7 +51,7 @@ The stages and their function are:
   minion to the group.
 * `15_secrets`: Assign secrets via Pillar to minions based on their `minion_groups`.
   This stage can also be provided by an ext Pillar module that talks to a Vault or Password manager.
-* `20_variables`: Assign Pillar that are not secret to minions based based on their `minion_groups`.
+* `20_variables`: Assign Pillar that are not secret to minions based on their `minion_groups`.
   `20_variables` is the main part of the Pillar.
   Its main responsibility is to map from minion group to the Formula(s) that
   are needed to implement the function of the minion group.
